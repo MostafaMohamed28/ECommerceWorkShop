@@ -1,6 +1,10 @@
 using ECommerce.API.DTOs;
+using ECommerce.Application.Contracts;
+using ECommerce.Application.Dtos;
 using ECommerce.DAL.Context;
 using ECommerce.DAL.Entities;
+using ECommerce.Domain.Contract;
+using ECommerce.Infrastructure.Context;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,76 +14,51 @@ namespace ECommerce.API.Controllers;
 [Route("api/[controller]")]
 public class CustomersController : ControllerBase
 {
-    private readonly AppDbContext _context;
-
-    public CustomersController(AppDbContext context)
+    private readonly ICustomerService customerService;
+    public CustomersController(ICustomerService customerService)
     {
-        _context = context;
+        this.customerService = customerService;
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Customer>> GetById(int id)
+    public async Task<ActionResult<Customer>> GetById(int id,CancellationToken ct)
     {
-        var customer = await _context.Customers
-            .Include(c => c.Orders)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var customer = await customerService.GetByIdAsync(id, ct);
 
-        if (customer == null) 
+        if (customer is null)
+        {
             return NotFound($"Customer with ID {id} not found.");
+        }
 
-        return Ok(customer);
+        return new OkObjectResult(customer);
+
     }
 
     [HttpPost]
     public async Task<ActionResult<Customer>> Create([FromBody] CreateCustomerDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.FullName))
-            return BadRequest("Full name is required.");
-
-        if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains("@"))
-            return BadRequest("A valid email address is required.");
-
-        var emailExists = await _context.Customers.AnyAsync(c => c.Email.ToLower() == dto.Email.ToLower());
-        if (emailExists)
+       
+        var customer = await customerService.CreateCustomerAsync(dto);
+        if (customer is null)
         {
-            return BadRequest("Email is already registered.");
+          return BadRequest("Failed to create customer.");
         }
-
-        var customer = new Customer
-        {
-            FullName = dto.FullName,
-            Email = dto.Email,
-            IsVip = dto.IsVip
-        };
-
-        await _context.Customers.AddAsync(customer);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetById), new { id = customer.Id }, customer);
+        return CreatedAtAction(nameof(GetById), new { id = customer.data.Id }, customer);
     }
 
     [HttpPost("{id}/upgrade-vip")]
-    public async Task<IActionResult> UpgradeToVip(int id)
+    public async Task<IActionResult> UpgradeToVip(int id,CancellationToken ct)
     {
-        var customer = await _context.Customers
-            .Include(c => c.Orders)
-            .FirstOrDefaultAsync(c => c.Id == id);
+       
 
-        if (customer == null) 
-            return NotFound();
-
-        var totalSpent = customer.Orders
-            .Where(o => o.Status == OrderStatus.Paid)
-            .Sum(o => o.TotalAmount);
-
-        if (totalSpent < 500m)
+        var result = await customerService.UpgradeToVipAsync(id, ct);
+        if (result.IsSuccess)
         {
-            return BadRequest($"Customer does not qualify for VIP. Total spend {totalSpent:C} is less than required $500.00");
+            return Ok(new { message = "Customer upgraded to VIP successfully." });
         }
-
-        customer.IsVip = true;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "Customer upgraded to VIP successfully." });
+        else
+        {
+            return BadRequest(result.Error);
+        }
     }
 }

@@ -14,7 +14,7 @@ public class Customer
     [EmailAddress]
     public string Email { get; set; } = string.Empty;
     
-    public bool IsVip { get; set; }
+    public bool IsVip { get;  set; }
     
     public List<Order> Orders { get; set; } = new();
 }
