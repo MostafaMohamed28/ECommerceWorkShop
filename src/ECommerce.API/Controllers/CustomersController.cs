@@ -1,7 +1,5 @@
-using ECommerce.API.DTOs;
-using ECommerce.Application.Contracts;
+using ECommerce.Application.Contracts.CustomerService;
 using ECommerce.Application.Dtos;
-using ECommerce.DAL.Context;
 using ECommerce.DAL.Entities;
 using ECommerce.Domain.Contract;
 using ECommerce.Infrastructure.Context;
@@ -10,9 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class CustomersController : ControllerBase
+public class CustomersController : ApiBaseController
 {
     private readonly ICustomerService customerService;
     public CustomersController(ICustomerService customerService)
@@ -21,44 +17,28 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Customer>> GetById(int id,CancellationToken ct)
+    public async Task<IActionResult> GetById(int id,CancellationToken ct)
     {
         var customer = await customerService.GetByIdAsync(id, ct);
 
-        if (customer is null)
-        {
-            return NotFound($"Customer with ID {id} not found.");
-        }
-
-        return new OkObjectResult(customer);
+       return ToActionResult(customer);
 
     }
 
     [HttpPost]
-    public async Task<ActionResult<Customer>> Create([FromBody] CreateCustomerDto dto)
+    public async Task<IActionResult> Create([FromBody] CreateCustomerDto dto)
     {
        
         var customer = await customerService.CreateCustomerAsync(dto);
-        if (customer is null)
-        {
-          return BadRequest("Failed to create customer.");
-        }
-        return CreatedAtAction(nameof(GetById), new { id = customer.data.Id }, customer);
+        
+        return ToActionResult(customer);
     }
 
     [HttpPost("{id}/upgrade-vip")]
     public async Task<IActionResult> UpgradeToVip(int id,CancellationToken ct)
     {
-       
-
         var result = await customerService.UpgradeToVipAsync(id, ct);
-        if (result.IsSuccess)
-        {
-            return Ok(new { message = "Customer upgraded to VIP successfully." });
-        }
-        else
-        {
-            return BadRequest(result.Error);
-        }
+        
+        return ToActionResult(result);
     }
 }

@@ -8,7 +8,7 @@ using ECommerce.Domain.Contract;
 using ECommerce.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace ECommerce.Infrastructure.Repository
+namespace ECommerce.Infrastructure.Repository.CustomerRepo
 {
     public class CustomerRepository : ICustomerRepository
     {
@@ -27,6 +27,11 @@ namespace ECommerce.Infrastructure.Repository
         public async  Task<bool> EmailIsExistAsync(string email, CancellationToken ct = default)
         {
            return await _context.Customers.AnyAsync(c => c.Email.ToLower() == email.ToLower(), ct);
+        }
+
+        public async Task<bool> ExistsAsync(int id, CancellationToken ct = default)
+        {
+           return await _context.Customers.AnyAsync(c => c.Id == id, ct);   
         }
 
         public async Task<IEnumerable<Customer>> GetAllAsync(CancellationToken ct = default)

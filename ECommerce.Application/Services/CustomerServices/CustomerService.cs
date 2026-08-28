@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ECommerce.Application.Common;
-using ECommerce.Application.Contracts;
+using ECommerce.Application.Contracts.CustomerService;
 using ECommerce.Application.Dtos;
 using ECommerce.DAL.Entities;
 using ECommerce.Domain.Contract;
 using Microsoft.EntityFrameworkCore;
 
-namespace ECommerce.Application.Services
+namespace ECommerce.Application.Services.CustomerService
 {
     public class CustomerService : ICustomerService
     {

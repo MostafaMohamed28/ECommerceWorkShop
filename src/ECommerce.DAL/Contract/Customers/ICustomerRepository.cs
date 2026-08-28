@@ -14,6 +14,7 @@ namespace ECommerce.Domain.Contract
 
         Task<bool> EmailIsExistAsync(string email, CancellationToken ct = default);
         Task AddAsync(Customer customer, CancellationToken ct = default);
+        Task<bool> ExistsAsync(int id, CancellationToken ct = default);
         Task SaveChangesAsync(CancellationToken ct = default);
 
     }

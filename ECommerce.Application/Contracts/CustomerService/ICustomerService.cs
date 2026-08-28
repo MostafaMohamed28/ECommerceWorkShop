@@ -7,7 +7,7 @@ using ECommerce.Application.Common;
 using ECommerce.Application.Dtos;
 using ECommerce.DAL.Entities;
 
-namespace ECommerce.Application.Contracts
+namespace ECommerce.Application.Contracts.CustomerService
 {
     public interface ICustomerService
     {
