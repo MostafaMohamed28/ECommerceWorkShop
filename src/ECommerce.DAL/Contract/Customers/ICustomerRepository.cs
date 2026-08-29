@@ -7,15 +7,16 @@ using ECommerce.DAL.Entities;
 
 namespace ECommerce.Domain.Contract
 {
-    public interface ICustomerRepository
+    public interface ICustomerReadRepository
     {
-        Task<Customer?> GetByIdAsync(int id, CancellationToken ct = default);
-        Task<IEnumerable<Customer>> GetAllAsync(CancellationToken ct = default);
+        Task<Customer?> GetByIdAsync(int id, CancellationToken ct = default);//read
+        Task<IEnumerable<Customer>> GetAllAsync(CancellationToken ct = default);//read
+        Task<bool> EmailIsExistAsync(string email, CancellationToken ct = default);//read
+        Task<bool> ExistsAsync(int id, CancellationToken ct = default);//read
+    }
 
-        Task<bool> EmailIsExistAsync(string email, CancellationToken ct = default);
-        Task AddAsync(Customer customer, CancellationToken ct = default);
-        Task<bool> ExistsAsync(int id, CancellationToken ct = default);
-        Task SaveChangesAsync(CancellationToken ct = default);
-
+    public interface ICustomerWriteRepository
+    {
+        Task AddAsync(Customer customer, CancellationToken ct = default);//write
     }
 }

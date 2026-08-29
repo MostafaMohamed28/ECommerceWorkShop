@@ -1,9 +1,6 @@
-using ECommerce.Application.Contracts.CustomerService;
-using ECommerce.Application.Contracts.OrderService;
-using ECommerce.Application.Contracts.ProductService;
-using ECommerce.Application.Services.CustomerService;
-using ECommerce.Application.Services.OrderServices;
-using ECommerce.Application.Services.ProductServices;
+using ECommerce.Application.CQRS.Customers.Queries.GetById;
+using ECommerce.Application.CQRS.Orders.Queries.GetOrdersByCustomerId;
+using ECommerce.Application.CQRS.Products.Queries.GetAllProduct;
 using ECommerce.Domain.Contract;
 using ECommerce.Domain.Contract.Orders;
 using ECommerce.Domain.Contract.Products;
@@ -24,14 +21,25 @@ builder.Services.AddSwaggerGen();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
-builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ICustomerReadRepository, CustomerReadRepository>();
+builder.Services.AddScoped<ICustomerWriteRepository, CustomerWriteRepository>();
+builder.Services.AddScoped<IOrderReadRepository, OrderReadRepository>();
+builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
+builder.Services.AddScoped<IProductWriteRepository, ProductWriteRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<IProductService, ProductService>();
 
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(
+        typeof(GetAllProductsQueryHandler).Assembly));
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(
+        typeof(GetOrdersByCustomerIdQueryHandler).Assembly));
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(
+        typeof(GetByIdQueryHandler).Assembly));
 
 var app = builder.Build();
 

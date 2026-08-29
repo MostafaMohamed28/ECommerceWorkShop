@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Repository.Products
 {
-    public class ProductRepository : IProductRepository
+    public class ProductReadRepository : IProductReadRepository
     {
         private readonly AppDbContext appContext;
 
-        public ProductRepository(AppDbContext appContext)
+        public ProductReadRepository(AppDbContext appContext)
         {
             this.appContext = appContext;
         }   
@@ -51,5 +51,30 @@ namespace ECommerce.Infrastructure.Repository.Products
             return await appContext.Products.AnyAsync(p => p.SKU == sku, ct);
         }
 
+    }
+
+    public class ProductWriteRepository : IProductWriteRepository
+    {
+        private readonly AppDbContext appContext;
+
+        public ProductWriteRepository(AppDbContext appContext)
+        {
+            this.appContext = appContext;
+        }
+        public async Task AddProductAsync(Product product, CancellationToken ct = default)
+        {
+            await appContext.Products.AddAsync(product, ct);
+        }
+
+        public async Task DeleteProductAsync(int id, CancellationToken ct = default)
+        {
+            await appContext.Products.Where(p => p.Id == id).ExecuteDeleteAsync(ct);
+        }
+
+        public async Task UpdateProductAsync(Product product, CancellationToken ct = default)
+        {
+            appContext.Products.Update(product);
+            await appContext.SaveChangesAsync(ct);  
+        }
     }
 }

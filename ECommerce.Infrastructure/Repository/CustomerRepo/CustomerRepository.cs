@@ -10,18 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Repository.CustomerRepo
 {
-    public class CustomerRepository : ICustomerRepository
+    public class CustomerReadRepository : ICustomerReadRepository
     {
         private readonly AppDbContext _context;
 
-        public CustomerRepository(AppDbContext context)
+        public CustomerReadRepository(AppDbContext context)
         {
             _context = context;
-        }
-
-        public async Task AddAsync(Customer customer, CancellationToken ct = default)
-        {
-           await _context.Customers.AddAsync(customer, ct);
         }
 
         public async  Task<bool> EmailIsExistAsync(string email, CancellationToken ct = default)
@@ -43,10 +38,22 @@ namespace ECommerce.Infrastructure.Repository.CustomerRepo
         {
             return await _context.Customers.Include(c => c.Orders).FirstOrDefaultAsync(c => c.Id == id, ct);
         }
+      
+    }
 
-        public async Task SaveChangesAsync(CancellationToken ct = default)
+    public class CustomerWriteRepository : ICustomerWriteRepository
+    {
+        private readonly AppDbContext _context;
+
+        public CustomerWriteRepository(AppDbContext context)
         {
-            await _context.SaveChangesAsync(ct);
+            _context = context;
         }
+
+        public async Task AddAsync(Customer customer, CancellationToken ct = default)
+        {
+            await _context.Customers.AddAsync(customer, ct);
+        }
+
     }
 }

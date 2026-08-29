@@ -1,8 +1,13 @@
 using ECommerce.Application.Common;
 using ECommerce.Application.Contracts.OrderService;
+using ECommerce.Application.CQRS.Orders.Commands.CancelOrder;
+using ECommerce.Application.CQRS.Orders.Commands.Checkout;
+using ECommerce.Application.CQRS.Orders.Queries.GetOrderById;
+using ECommerce.Application.CQRS.Orders.Queries.GetOrdersByCustomerId;
 using ECommerce.Application.Dtos;
 using ECommerce.DAL.Entities;
 using ECommerce.Infrastructure.Context;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,17 +16,17 @@ namespace ECommerce.API.Controllers;
 
 public class OrdersController : ApiBaseController
 {
-    private readonly IOrderService _orderService;
+    private readonly IMediator _mediator;
 
-    public OrdersController(IOrderService orderService)
+    public OrdersController(IMediator mediator)
     {
-        _orderService = orderService;
+        _mediator = mediator;
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Order>> GetOrder(int id,CancellationToken ct = default)
     {
-        var result = await _orderService.GetOrderByIdAsync(id, ct);
+        var result = await _mediator.Send(new GetOrderByIdQuery(id), ct);
 
         if (result.IsSuccess)
         {
@@ -35,7 +40,7 @@ public class OrdersController : ApiBaseController
     [HttpGet("customer/{customerId}")]
     public async Task<ActionResult<IReadOnlyList<Order>>> GetCustomerOrders(int customerId, CancellationToken ct = default)
     {
-        var result = await _orderService.GetOrdersByCustomerIdAsync(customerId, ct);
+        var result = await _mediator.Send(new GetOrdersByCustomerIdQuery(customerId), ct);
 
         if (result.IsSuccess)
         {
@@ -48,7 +53,7 @@ public class OrdersController : ApiBaseController
     [HttpPost("cancel/{id}")]
     public async Task<IActionResult> CancelOrder(int id,CancellationToken ct)
     {
-        var result=await _orderService.CancelOrderAsync(id,ct);
+        var result=await _mediator.Send(new CancelOrderCommand(id), ct);
 
         return ToActionResult(result);
     }
@@ -56,7 +61,7 @@ public class OrdersController : ApiBaseController
     [HttpPost("checkout")]
     public async Task<IActionResult> Checkout([FromBody] CreateOrderDto request, CancellationToken ct = default)
     {
-        var result = await _orderService.CheckoutAsync(request, ct);
+        var result = await _mediator.Send(new CheckoutCommand(request), ct);
         return ToActionResult(result);
     }
 }

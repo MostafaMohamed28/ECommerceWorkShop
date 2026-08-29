@@ -7,10 +7,10 @@ using ECommerce.DAL.Entities;
 
 namespace ECommerce.Domain.Contract.Orders
 {
-    public interface IOrderRepository
+    public interface IOrderReadRepository
     {
-        Task<Order?> GetOrderByIdAsync(int id, CancellationToken ct);
-        Task<IReadOnlyList<Order>> GetByCustomerIdAsync(int customerId, CancellationToken ct);
-        Task<Coupon?> GetCouponByCodeAsync(string code, CancellationToken ct);
+        Task<Order?> GetOrderByIdAsync(int id, CancellationToken ct);//Read
+        Task<IReadOnlyList<Order>> GetByCustomerIdAsync(int customerId, CancellationToken ct);//Read
+        Task<Coupon?> GetCouponByCodeAsync(string code, CancellationToken ct);//Read
     }
 }

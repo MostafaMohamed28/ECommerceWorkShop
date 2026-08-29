@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Core;
+using ECommerce.Application.DTOs;
 using ECommerce.DAL.Entities;
 using ECommerce.Domain.Contract.Orders;
 using ECommerce.Infrastructure.Context;
@@ -11,11 +12,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Repository.OrdersRepo
 {
-    public class OrderRepository : IOrderRepository
+    public class OrderReadRepository : IOrderReadRepository
     {
         private readonly AppDbContext _context;
 
-        public OrderRepository(AppDbContext context)
+        public OrderReadRepository(AppDbContext context)
         {
             _context = context;
         }
