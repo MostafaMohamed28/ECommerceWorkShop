@@ -1,16 +1,22 @@
+using ECommerce.Application.BackgroundServices;
+using ECommerce.Application.CQRS.Baskts.Commands.DeleteBasket;
 using ECommerce.Application.CQRS.Customers.Queries.GetById;
 using ECommerce.Application.CQRS.Orders.Queries.GetOrdersByCustomerId;
 using ECommerce.Application.CQRS.Products.Queries.GetAllProduct;
 using ECommerce.Domain.Contract;
+using ECommerce.Domain.Contract.Baskets;
 using ECommerce.Domain.Contract.Orders;
 using ECommerce.Domain.Contract.Products;
 using ECommerce.Domain.Contract.UnitOfWork;
 using ECommerce.Infrastructure.Context;
+using ECommerce.Infrastructure.Repository.BasketRepo;
 using ECommerce.Infrastructure.Repository.CustomerRepo;
 using ECommerce.Infrastructure.Repository.OrdersRepo;
 using ECommerce.Infrastructure.Repository.Products;
 using ECommerce.Infrastructure.Repository.UnitOfWorkReo;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +33,17 @@ builder.Services.AddScoped<IOrderReadRepository, OrderReadRepository>();
 builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
 builder.Services.AddScoped<IProductWriteRepository, ProductWriteRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IBasketReadRepository, BasketReadRepository>();
+builder.Services.AddScoped<IBasketWriteRepository, BasketWriteRepository>();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddHostedService<StaleBasketItemsCleanupService>();
+builder.Services.Configure<ConnectionRedis>(builder.Configuration.GetSection("ConnectionRedis"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = sp.GetRequiredService<IOptions<ConnectionRedis>>().Value;
+    return ConnectionMultiplexer.Connect(configuration.Redis);
+});
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(
@@ -40,6 +56,11 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(
         typeof(GetByIdQueryHandler).Assembly));
+
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(
+        typeof(DeleteBasketCommandHandler).Assembly));
 
 var app = builder.Build();
 
@@ -60,3 +81,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public class ConnectionRedis
+{
+    public string Redis { get; set; }
+
+}

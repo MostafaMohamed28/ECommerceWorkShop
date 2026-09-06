@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ECommerce.Domain.Entities.Basket;
 
 namespace ECommerce.DAL.Entities;
 
@@ -17,4 +18,6 @@ public class Customer
     public bool IsVip { get;  set; }
     
     public List<Order> Orders { get; set; } = new();
+    public Basket? Basket { get; set; }
+
 }

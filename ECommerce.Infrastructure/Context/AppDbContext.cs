@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ECommerce.DAL.Entities;
+using ECommerce.Domain.Entities.Basket;
+using ECommerce.Domain.Entities.Baskets;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Context
@@ -81,6 +83,28 @@ namespace ECommerce.Infrastructure.Context
                     IsSuccess = true
                 }
             );
+
+
+            modelBuilder.Entity<Basket>().HasKey(b => b.Id);
+
+            modelBuilder.Entity<Basket>().HasOne(b => b.Customer)
+                .WithOne()
+                .HasForeignKey<Basket>(b => b.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Basket>().HasIndex(b => b.CustomerId)
+                .IsUnique();
+
+            modelBuilder.Entity<Basket>().Property(b => b.CouponCode)
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<Basket>().Property(b => b.UpdatedAt)
+                .IsRequired();
+
+            modelBuilder.Entity<Basket>().HasMany<BasketItem>("Items")
+                .WithOne()
+                .HasForeignKey(i => i.BasketId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<Product> Products => Set<Product>();
@@ -89,5 +113,8 @@ namespace ECommerce.Infrastructure.Context
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<Coupon> Coupons => Set<Coupon>();
         public DbSet<Payment> Payments => Set<Payment>();
+        public DbSet<Basket> Baskets => Set<Basket>();
+        public DbSet<BasketItem> BasketItems => Set<BasketItem>();
+
     }
 }
